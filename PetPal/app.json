@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "PetPal",
+    "slug": "PetPal",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#FFB6C1"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.petpal.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#FFB6C1"
+      },
+      "package": "com.petpal.app"
+    },
+    "web": {
+      "meta": {
+        "themeColor": "#FFB6C1",
+        "description": "PetPal - 儿童电子宠物养成游戏"
+      }
+    }
+  }
+}
