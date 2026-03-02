@@ -16,7 +16,7 @@ import { useThemeStore } from '../../stores/themeStore';
 import { useApiStore } from '../../stores/apiStore';
 import { usePetStore } from '../../stores/petStore';
 import { useChatStore } from '../../stores/chatStore';
-import { sendChatMessage, ChatMessage } from '../../services/chatService';
+import { sendChatMessage, speakText, ChatMessage } from '../../services/chatService';
 import { getColors, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../constants/theme';
 
 interface ChatModalProps {
@@ -35,9 +35,9 @@ export const ChatModal: React.FC<ChatModalProps> = ({ visible, onClose }) => {
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
 
-  // Load chat data when modal opens
   useEffect(() => {
     if (visible) {
       chatStore.loadChatData();
@@ -45,7 +45,6 @@ export const ChatModal: React.FC<ChatModalProps> = ({ visible, onClose }) => {
     }
   }, [visible]);
 
-  // Initial greeting when opened with no messages
   useEffect(() => {
     if (visible && isInitialized && messages.length === 0) {
       chatStore.addMessage({
@@ -88,6 +87,18 @@ export const ChatModal: React.FC<ChatModalProps> = ({ visible, onClose }) => {
     }
   };
 
+  const handleSpeak = async (text: string) => {
+    if (isSpeaking) return;
+    try {
+      setIsSpeaking(true);
+      await speakText(text);
+    } catch (error) {
+      console.warn('Speak error:', error);
+    } finally {
+      setIsSpeaking(false);
+    }
+  };
+
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose} transparent={false}>
       <KeyboardAvoidingView style={[styles.container, { backgroundColor: COLORS.background }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -102,6 +113,15 @@ export const ChatModal: React.FC<ChatModalProps> = ({ visible, onClose }) => {
           {messages.map((msg) => (
             <View key={msg.id} style={[styles.messageBubble, msg.role === 'user' ? styles.userMessage : styles.assistantMessage]}>
               <Text style={[styles.messageText, { color: msg.role === 'user' ? '#fff' : COLORS.text }]}>{msg.content}</Text>
+              {msg.role === 'assistant' && (
+                <Pressable 
+                  style={styles.speakButton} 
+                  onPress={() => handleSpeak(msg.content)}
+                  disabled={isSpeaking}
+                >
+                  <Text style={styles.speakButtonText}>🔊</Text>
+                </Pressable>
+              )}
             </View>
           ))}
           {isLoading && (
@@ -144,6 +164,8 @@ const styles = StyleSheet.create({
   userMessage: { alignSelf: 'flex-end', backgroundColor: '#4A90D9', borderBottomRightRadius: 4 },
   assistantMessage: { alignSelf: 'flex-start', backgroundColor: '#F0F0F0', borderBottomLeftRadius: 4 },
   messageText: { fontSize: FONT_SIZES.md, lineHeight: 22 },
+  speakButton: { marginTop: 8, alignSelf: 'flex-start' },
+  speakButtonText: { fontSize: 16 },
   loadingContainer: { flexDirection: 'row', alignItems: 'center', padding: SPACING.md },
   loadingText: { marginLeft: SPACING.md, fontSize: FONT_SIZES.sm },
   inputContainer: { flexDirection: 'row', alignItems: 'flex-end', padding: SPACING.md, borderTopWidth: 1, gap: SPACING.md },
