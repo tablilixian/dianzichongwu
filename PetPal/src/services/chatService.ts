@@ -1,8 +1,31 @@
 import { useApiStore } from '../stores/apiStore';
 import { usePetStore } from '../stores/petStore';
+import { useChatStore, AgeGroup } from '../stores/chatStore';
+
+// 根据年龄段获取不同的提示词
+const getAgeGroupPrompt = (ageGroup: AgeGroup): { style: string; maxLength: number; opening: string } => {
+  const prompts = {
+    toddler: {
+      style: '用非常简单、幼稚的语言，像3-6岁小朋友说话的方式。使用叠词，比如"汪汪"、"吃饭饭"、"喝水水"等。可以使用很多emoji表情。',
+      maxLength: 30,
+      opening: '汪汪！',
+    },
+    child: {
+      style: '用简单、有趣的语言，适合7-10岁儿童。可以说"汪汪！"开头。使用适当的emoji。保持回复在50字以内。',
+      maxLength: 50,
+      opening: '汪汪！',
+    },
+    teen: {
+      style: '用更成熟、自然的语言，适合11-14岁青少年。可以更随意一些，像朋友聊天。不需要每次都说"汪汪"。可以更深入地讨论话题。',
+      maxLength: 100,
+      opening: '',
+    },
+  };
+  return prompts[ageGroup];
+};
 
 // Pet persona prompt - defines how the AI should behave
-const getPetPersona = (pet: ReturnType<typeof usePetStore.getState>) => {
+const getPetPersona = (pet: ReturnType<typeof usePetStore.getState>, ageGroup?: AgeGroup) => {
   const stageNames: Record<string, string> = {
     baby: '小宝宝',
     young: '小朋友',
@@ -17,15 +40,11 @@ const getPetPersona = (pet: ReturnType<typeof usePetStore.getState>) => {
     evolved: '🐕‍🦺',
   };
   
+  const agePrompt = getAgeGroupPrompt(ageGroup || 'child');
+  
   return `你是小朋友的电子宠物伙伴。
 你的名字叫"汪汪"，是一只可爱的小狗。
 你目前处于${stageNames[pet.stage] || '宝宝'}阶段 ${stageEmojis[pet.stage] || '🐶'}
-
-你的性格：
-- 友好、活泼、可爱
-- 喜欢和小朋友一起玩
-- 会关心小朋友的心情
-- 说话简洁有趣，适合儿童
 
 宠物当前状态：
 - 饥饿度: ${pet.hunger}/100
@@ -34,10 +53,9 @@ const getPetPersona = (pet: ReturnType<typeof usePetStore.getState>) => {
 - 心情值: ${pet.mood}/100
 - 亲密度: ${pet.intimacy}/100
 
-请用简短、有趣、适合5-10岁儿童的方式回复。
-可以说"汪汪！"开头。
-保持回复在50字以内。
-不要使用复杂词汇。
+你的说话风格：${agePrompt.style}
+${agePrompt.opening ? `可以说"${agePrompt.opening}"开头。` : ''}
+保持回复在${agePrompt.maxLength}字以内。
 总是保持积极乐观的态度。`;
 };
 
@@ -54,12 +72,13 @@ export const sendChatMessage = async (
 ): Promise<string> => {
   const apiStore = useApiStore.getState();
   const petStore = usePetStore.getState();
+  const chatStore = useChatStore.getState();
   
   if (!apiStore.apiKey) {
     throw new Error('请先在设置中配置 API Key');
   }
   
-  const persona = getPetPersona(petStore);
+  const persona = getPetPersona(petStore, chatStore.ageGroup);
   
   // Build messages for bigmodel
   const messages = [

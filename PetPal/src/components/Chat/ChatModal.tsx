@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import {
 import { useThemeStore } from '../../stores/themeStore';
 import { useApiStore } from '../../stores/apiStore';
 import { usePetStore } from '../../stores/petStore';
+import { useChatStore } from '../../stores/chatStore';
 import { sendChatMessage, ChatMessage } from '../../services/chatService';
 import { getColors, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../constants/theme';
 
@@ -27,33 +28,49 @@ export const ChatModal: React.FC<ChatModalProps> = ({ visible, onClose }) => {
   const theme = useThemeStore();
   const apiStore = useApiStore();
   const pet = usePetStore();
+  const chatStore = useChatStore();
   const COLORS = getColors(theme.isDarkMode);
 
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const messages = chatStore.messages;
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
 
-  // Initial greeting when opened
-  React.useEffect(() => {
-    if (visible && messages.length === 0) {
-      setMessages([
-        { id: '1', role: 'assistant', content: '汪汪！你好呀！我是你的宠物小伙伴，有什么想和我聊的吗？🐶', timestamp: Date.now() }
-      ]);
+  // Load chat data when modal opens
+  useEffect(() => {
+    if (visible) {
+      chatStore.loadChatData();
+      setIsInitialized(true);
     }
   }, [visible]);
 
+  // Initial greeting when opened with no messages
+  useEffect(() => {
+    if (visible && isInitialized && messages.length === 0) {
+      chatStore.addMessage({
+        id: '1',
+        role: 'assistant',
+        content: '汪汪！你好呀！我是你的宠物小伙伴，有什么想和我聊的吗？🐶',
+        timestamp: Date.now()
+      });
+    }
+  }, [visible, isInitialized]);
+
   const handleSend = async () => {
     if (!inputText.trim() || isLoading) return;
+    
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
       role: 'user',
       content: inputText.trim(),
       timestamp: Date.now(),
     };
-    setMessages((prev) => [...prev, userMessage]);
+    
+    chatStore.addMessage(userMessage);
     setInputText('');
     setIsLoading(true);
+    
     try {
       const response = await sendChatMessage(userMessage.content, messages);
       const assistantMessage: ChatMessage = {
@@ -62,7 +79,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({ visible, onClose }) => {
         content: response,
         timestamp: Date.now(),
       };
-      setMessages((prev) => [...prev, assistantMessage]);
+      chatStore.addMessage(assistantMessage);
       pet.pet();
     } catch (error) {
       Alert.alert('发送失败', error instanceof Error ? error.message : '请稍后重试');
@@ -74,7 +91,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({ visible, onClose }) => {
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose} transparent={false}>
       <KeyboardAvoidingView style={[styles.container, { backgroundColor: COLORS.background }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View style={[styles.header, { borderBottomColor: COLORS.border }] }>
+        <View style={[styles.header, { borderBottomColor: COLORS.textLight }] }>
           <Text style={[styles.headerTitle, { color: COLORS.primaryDark }]}>汪汪聊天</Text>
           <Pressable onPress={onClose} style={styles.closeButton}>
             <Text style={[styles.closeText, { color: COLORS.primary }]}>关闭</Text>
@@ -95,7 +112,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({ visible, onClose }) => {
           )}
         </ScrollView>
 
-        <View style={[styles.inputContainer, { borderTopColor: COLORS.border }]}> 
+        <View style={[styles.inputContainer, { borderTopColor: COLORS.textLight }]}>
           <TextInput
             style={[styles.input, { backgroundColor: theme.isDarkMode ? '#2A2A3E' : '#F5F5F5', color: COLORS.text }]}
             value={inputText}
