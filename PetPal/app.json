@@ -20,6 +20,12 @@
       "package": "com.petpal.app"
     },
     "web": {
+      "favicon": "./assets/favicon.png",
+      "meta": {
+        "themeColor": "#FFB6C1",
+        "description": "PetPal - 儿童电子宠物养成游戏"
+      }
+    }
       "meta": {
         "themeColor": "#FFB6C1",
         "description": "PetPal - 儿童电子宠物养成游戏"
