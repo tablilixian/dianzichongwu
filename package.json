@@ -2,9 +2,11 @@
   "name": "dianzichongwu",
   "version": "1.0.0",
   "scripts": {
-    "build": "cd PetPal && npm install --legacy-peer-deps && npm run build:web"
+    "build": "cd PetPal && npm install --legacy-peer-deps && npx expo export:web"
   },
+  "dependencies": {},
   "engines": {
-    "node": ">=18"
+    "node": ">=18",
+    "npm": ">=9"
   }
 }
