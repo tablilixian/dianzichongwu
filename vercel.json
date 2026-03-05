@@ -1,7 +1,7 @@
 {
-  "buildCommand": "cd PetPal && npx expo export -p web",
+  "buildCommand": "cd PetPal && npx expo export:web",
   "outputDirectory": "PetPal/dist",
-  "devCommand": "npx expo",
+  "devCommand": "cd PetPal && npx expo start",
   "cleanUrls": true,
   "framework": null,
   "installCommand": "cd PetPal && npm install",
