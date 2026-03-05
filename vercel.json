@@ -1,0 +1,6 @@
+{
+  "buildCommand": "cd PetPal && npx expo export --platform web",
+  "outputDirectory": "PetPal/dist",
+  "framework": null,
+  "installCommand": "cd PetPal && npm install"
+}
