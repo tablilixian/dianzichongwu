@@ -1,6 +1,6 @@
 {
-  "buildCommand": "cd PetPal && npm run build:web",
+  "buildCommand": "npm run build",
   "outputDirectory": "PetPal/web-build",
   "devCommand": "cd PetPal && npx expo start --web",
-  "installCommand": "cd PetPal && npm install"
+  "installCommand": "npm install"
 }

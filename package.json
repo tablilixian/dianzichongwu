@@ -1,0 +1,10 @@
+{
+  "name": "dianzichongwu",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "cd PetPal && npm install --legacy-peer-deps && npm run build:web"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
