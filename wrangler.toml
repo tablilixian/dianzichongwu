@@ -1,0 +1,11 @@
+name = "dianzichongwu"
+compatibility_date = "2024-01-01"
+
+[build]
+command = "cd PetPal && npm install --legacy-peer-deps && npx expo export:web"
+cwd = "."
+watch_dir = "PetPal"
+
+[build.environment]
+NODE_VERSION = "18"
+NPM_VERSION = "9"

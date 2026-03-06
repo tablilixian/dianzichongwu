@@ -1,6 +1,0 @@
-{
-  "buildCommand": "cd PetPal && npm install --legacy-peer-deps && npx expo export:web",
-  "outputDirectory": "PetPal/web-build",
-  "devCommand": "cd PetPal && npx expo start --web",
-  "installCommand": "npm install"
-}
